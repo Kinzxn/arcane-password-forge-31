@@ -8,6 +8,7 @@ import { ResultsDisplay } from './ResultsDisplay';
 import { AttackMethodSelector, AttackConfig } from './AttackMethodSelector';
 import { PasswordAnalyzer } from './PasswordAnalyzer';
 import { ExportManager } from './ExportManager';
+import ChatBot from './ChatBot';
 import { Shield, Lock, Key, Activity } from 'lucide-react';
 import cyberBg from '@/assets/cyber-bg.jpg';
 
@@ -28,6 +29,7 @@ export interface CrackingJob {
 const PasswordCracker = () => {
   const [jobs, setJobs] = useState<CrackingJob[]>([]);
   const [activeTab, setActiveTab] = useState('upload');
+  const [isChatBotMinimized, setIsChatBotMinimized] = useState(true);
   const [attackConfig, setAttackConfig] = useState<AttackConfig>({
     method: 'dictionary',
     maxLength: 12,
@@ -99,7 +101,7 @@ const PasswordCracker = () => {
 
   return (
     <div 
-      className="min-h-screen bg-background p-6 relative"
+      className="min-h-screen bg-background p-3 sm:p-6 relative"
       style={{
         backgroundImage: `linear-gradient(rgba(16, 20, 24, 0.95), rgba(16, 20, 24, 0.95)), url(${cyberBg})`,
         backgroundSize: 'cover',
@@ -110,21 +112,21 @@ const PasswordCracker = () => {
       <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3 flex-wrap">
             <div className="p-3 rounded-full bg-primary/10 cyber-glow">
-              <Shield className="h-8 w-8 text-primary" />
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             </div>
-            <h1 className="text-4xl font-bold gradient-cyber bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-4xl font-bold gradient-cyber bg-clip-text text-transparent">
               PassHunter Pro
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg sm:text-xl text-muted-foreground px-4">
             Advanced Password Extraction & Decryption Tool
           </p>
         </div>
 
         {/* Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="cyber-border">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -188,31 +190,52 @@ const PasswordCracker = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5 bg-secondary/50">
-                <TabsTrigger value="upload">Upload</TabsTrigger>
-                <TabsTrigger value="config">Config</TabsTrigger>
-                <TabsTrigger value="progress">Progress</TabsTrigger>
-                <TabsTrigger value="results">Results</TabsTrigger>
-                <TabsTrigger value="export">Export</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto">
+                <TabsList className="grid w-full grid-cols-5 bg-secondary/50 min-w-max">
+                  <TabsTrigger value="upload" className="text-xs sm:text-sm">Upload</TabsTrigger>
+                  <TabsTrigger value="config" className="text-xs sm:text-sm">Config</TabsTrigger>
+                  <TabsTrigger value="progress" className="text-xs sm:text-sm">Progress</TabsTrigger>
+                  <TabsTrigger value="results" className="text-xs sm:text-sm">Results</TabsTrigger>
+                  <TabsTrigger value="export" className="text-xs sm:text-sm">Export</TabsTrigger>
+                </TabsList>
+              </div>
 
               <div className="mt-6">
                 <TabsContent value="upload" className="space-y-4">
                   <FileUploader onFileUpload={addJob} />
                 </TabsContent>
 
+                <TabsContent value="config" className="space-y-4">
+                  <AttackMethodSelector 
+                    onConfigChange={setAttackConfig} 
+                  />
+                  <PasswordAnalyzer 
+                    passwords={jobs.filter(j => j.result).map(j => j.result!)}
+                  />
+                </TabsContent>
+
                 <TabsContent value="progress" className="space-y-4">
-                  <AttackProgress jobs={jobs} />
+                  <EnhancedAttackProgress jobs={jobs} />
                 </TabsContent>
 
                 <TabsContent value="results" className="space-y-4">
                   <ResultsDisplay jobs={jobs.filter(j => j.status === 'completed' || j.status === 'failed')} />
+                </TabsContent>
+
+                <TabsContent value="export" className="space-y-4">
+                  <ExportManager jobs={jobs.filter(j => j.status === 'completed')} />
                 </TabsContent>
               </div>
             </Tabs>
           </CardContent>
         </Card>
       </div>
+      
+      {/* Chatbot Integration */}
+      <ChatBot 
+        isMinimized={isChatBotMinimized} 
+        onToggleMinimize={() => setIsChatBotMinimized(!isChatBotMinimized)}
+      />
     </div>
   );
 };

@@ -174,7 +174,7 @@ export const AttackMethodSelector = ({ onConfigChange }: AttackMethodSelectorPro
       <Card className="cyber-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <selectedMethodData?.icon className={`h-5 w-5 ${selectedMethodData?.color}`} />
+            {selectedMethodData?.icon && <selectedMethodData.icon className={`h-5 w-5 ${selectedMethodData?.color}`} />}
             {selectedMethodData?.name} Configuration
           </CardTitle>
         </CardHeader>

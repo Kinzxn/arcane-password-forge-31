@@ -2,9 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Send, Bot, User, Minimize2, Maximize2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MessageCircle, Send, Bot, User, Minimize2, Maximize2, HelpCircle, Zap, Lightbulb } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -23,13 +26,49 @@ const ChatBot = ({ isMinimized = false, onToggleMinimize }: ChatBotProps) => {
     {
       id: '1',
       type: 'bot',
-      content: 'Hello! I\'m your cybersecurity assistant. I can help you with password cracking techniques, tool usage, and security methodologies. What would you like to know?',
+      content: 'Hello! I\'m your cybersecurity assistant. I can help you with password cracking techniques, tool usage, and security methodologies. Click on quick questions below or type your own!',
       timestamp: new Date(),
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const quickQuestions = [
+    "How to use hashcat?",
+    "Dictionary vs Brute Force?", 
+    "Best wordlists?",
+    "GPU optimization tips?",
+    "Crack ZIP files?",
+    "Hash identification?"
+  ];
+
+  const categories = [
+    { id: 'tools', name: 'Tools', icon: Zap, questions: [
+      "How to use hashcat?",
+      "John the Ripper basics?", 
+      "Hydra for online attacks?",
+      "Best cracking tools?"
+    ]},
+    { id: 'methods', name: 'Methods', icon: HelpCircle, questions: [
+      "Dictionary vs Brute Force?",
+      "What are mask attacks?",
+      "Rainbow table attacks?",
+      "Hybrid attack methods?"
+    ]},
+    { id: 'optimization', name: 'Performance', icon: Lightbulb, questions: [
+      "GPU optimization tips?",
+      "Speed up cracking?",
+      "Hardware recommendations?",
+      "Multi-GPU setup?"
+    ]}
+  ];
+
+  const handleQuickQuestion = (question: string) => {
+    setInputValue(question);
+    handleSendMessage(question);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -123,13 +162,14 @@ const ChatBot = ({ isMinimized = false, onToggleMinimize }: ChatBotProps) => {
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputValue;
+    if (!textToSend.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputValue,
+      content: textToSend,
       timestamp: new Date(),
     };
 
@@ -142,7 +182,7 @@ const ChatBot = ({ isMinimized = false, onToggleMinimize }: ChatBotProps) => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        content: getBotResponse(inputValue),
+        content: getBotResponse(textToSend),
         timestamp: new Date(),
       };
       
@@ -160,104 +200,178 @@ const ChatBot = ({ isMinimized = false, onToggleMinimize }: ChatBotProps) => {
 
   if (isMinimized) {
     return (
-      <Button
-        onClick={onToggleMinimize}
-        className="fixed bottom-4 right-4 z-50 h-12 w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg"
-        size="icon"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
+      <div className="fixed bottom-4 right-4 z-[100] pointer-events-auto">
+        <Button
+          onClick={onToggleMinimize}
+          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-xl border-2 border-primary/20 transition-all duration-300 hover:scale-110"
+          size="icon"
+        >
+          <MessageCircle className="h-7 w-7" />
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 z-50 w-80 sm:w-96 h-96 cyber-border bg-background/95 backdrop-blur-sm">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-full bg-primary/10">
-              <Bot className="h-4 w-4 text-primary" />
+    <div className="fixed bottom-4 right-4 z-[100] pointer-events-auto">
+      <Card className="w-80 sm:w-96 h-[500px] cyber-border bg-background/95 backdrop-blur-sm shadow-2xl">
+        <CardHeader className="pb-3 border-b bg-gradient-to-r from-primary/5 to-accent/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-full bg-primary/10 animate-pulse">
+                <Bot className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-bold">Cyber Assistant</CardTitle>
+                <Badge variant="secondary" className="text-xs">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+                  Online
+                </Badge>
+              </div>
             </div>
-            <CardTitle className="text-sm">Cyber Assistant</CardTitle>
-            <Badge variant="secondary" className="text-xs">Online</Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-destructive/10"
+              onClick={onToggleMinimize}
+            >
+              <Minimize2 className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onToggleMinimize}
-          >
-            <Minimize2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex flex-col h-full pb-4">
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex items-start gap-2 ${
-                  message.type === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.type === 'bot' && (
-                  <div className="p-1 rounded-full bg-primary/10 mt-1">
-                    <Bot className="h-3 w-3 text-primary" />
-                  </div>
-                )}
-                
-                <div
-                  className={`max-w-[70%] rounded-lg p-3 text-sm ${
-                    message.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
-                  {message.content}
-                </div>
-                
-                {message.type === 'user' && (
-                  <div className="p-1 rounded-full bg-muted mt-1">
-                    <User className="h-3 w-3" />
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {isTyping && (
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-full bg-primary/10">
-                  <Bot className="h-3 w-3 text-primary" />
-                </div>
-                <div className="bg-muted rounded-lg p-3 text-sm">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          <div ref={messagesEndRef} />
-        </ScrollArea>
+        </CardHeader>
         
-        <div className="flex gap-2 mt-4">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask about password cracking..."
-            className="flex-1"
-          />
-          <Button onClick={handleSendMessage} size="icon" disabled={!inputValue.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        <CardContent className="p-0 h-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-2 rounded-none bg-muted/30">
+              <TabsTrigger value="chat" className="text-xs">Chat</TabsTrigger>
+              <TabsTrigger value="help" className="text-xs">Quick Help</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="chat" className="flex-1 flex flex-col p-4 mt-0">
+              <ScrollArea className="flex-1 pr-2 mb-4">
+                <div className="space-y-3">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex items-start gap-2 ${
+                        message.type === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      {message.type === 'bot' && (
+                        <div className="p-1 rounded-full bg-primary/10 mt-1 flex-shrink-0">
+                          <Bot className="h-3 w-3 text-primary" />
+                        </div>
+                      )}
+                      
+                      <div
+                        className={`max-w-[75%] rounded-lg p-3 text-sm ${
+                          message.type === 'user'
+                            ? 'bg-primary text-primary-foreground shadow-md'
+                            : 'bg-muted/50 border border-muted'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                      
+                      {message.type === 'user' && (
+                        <div className="p-1 rounded-full bg-primary/10 mt-1 flex-shrink-0">
+                          <User className="h-3 w-3 text-primary" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {isTyping && (
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded-full bg-primary/10">
+                        <Bot className="h-3 w-3 text-primary" />
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm border">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse"></div>
+                          <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div ref={messagesEndRef} />
+              </ScrollArea>
+              
+              {/* Enhanced Input Section */}
+              <div className="space-y-3 border-t pt-3">
+                <div className="flex gap-1 flex-wrap">
+                  {quickQuestions.slice(0, 3).map((question, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleQuickQuestion(question)}
+                      className="text-xs h-7 px-2 bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10"
+                    >
+                      {question}
+                    </Button>
+                  ))}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Textarea
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask about password cracking, tools, methods..."
+                    className="flex-1 min-h-[60px] resize-none text-sm"
+                    rows={2}
+                  />
+                  <Button 
+                    onClick={() => handleSendMessage()} 
+                    size="icon" 
+                    disabled={!inputValue.trim()}
+                    className="self-end h-[60px] w-12 bg-gradient-to-r from-primary to-accent hover:shadow-lg"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="help" className="flex-1 p-4 mt-0">
+              <ScrollArea className="h-full">
+                <div className="space-y-4">
+                  {categories.map((category) => (
+                    <div key={category.id} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <category.icon className="h-4 w-4 text-primary" />
+                        <h4 className="font-semibold text-sm">{category.name}</h4>
+                      </div>
+                      <div className="grid grid-cols-1 gap-1">
+                        {category.questions.map((question, index) => (
+                          <Button
+                            key={index}
+                            variant="ghost"
+                            onClick={() => {
+                              setActiveTab('chat');
+                              handleQuickQuestion(question);
+                            }}
+                            className="justify-start text-xs h-8 px-2 hover:bg-primary/5"
+                          >
+                            {question}
+                          </Button>
+                        ))}
+                      </div>
+                      {category.id !== categories[categories.length - 1].id && (
+                        <Separator className="my-2" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

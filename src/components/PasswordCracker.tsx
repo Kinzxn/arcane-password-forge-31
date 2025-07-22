@@ -101,7 +101,7 @@ const PasswordCracker = () => {
 
   return (
     <div 
-      className="min-h-screen bg-background p-3 sm:p-6 relative"
+      className="min-h-screen bg-background p-3 sm:p-6 relative overflow-x-hidden"
       style={{
         backgroundImage: `linear-gradient(rgba(16, 20, 24, 0.95), rgba(16, 20, 24, 0.95)), url(${cyberBg})`,
         backgroundSize: 'cover',
@@ -109,7 +109,7 @@ const PasswordCracker = () => {
         backgroundAttachment: 'fixed'
       }}
     >
-      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10 pointer-events-auto">
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3 flex-wrap">
